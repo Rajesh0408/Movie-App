@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 //models
 import '../models/search_category.dart';
+import '../models/movie.dart';
 
 class MainPage extends ConsumerWidget {
   double? _deviceHeight;
@@ -71,6 +72,13 @@ class MainPage extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           _topBarWidget(),
+          Container(
+            height: _deviceHeight! * 0.83,
+            padding: EdgeInsets.symmetric(
+              vertical: _deviceHeight! * 0.01,
+            ),
+            child: _moviesListViewWidget(),
+          ),
         ],
       ),
     );
@@ -138,27 +146,66 @@ class MainPage extends ConsumerWidget {
       onChanged: (_value) {},
       items: [
         DropdownMenuItem(
-            value: SearchCategory.popular,
-            child: Text(
-          SearchCategory.popular,
-          style: const TextStyle(color: Colors.white),
-        ),
-        ),
-        DropdownMenuItem(
-            value: SearchCategory.upcoming,
-            child: Text(
-          SearchCategory.upcoming,
-          style: const TextStyle(color: Colors.white),
-        ),
+          value: SearchCategory.popular,
+          child: Text(
+            SearchCategory.popular,
+            style: const TextStyle(color: Colors.white),
+          ),
         ),
         DropdownMenuItem(
-            value: SearchCategory.none,
-            child: Text(
-          SearchCategory.none,
-          style: const TextStyle(color: Colors.white),
+          value: SearchCategory.upcoming,
+          child: Text(
+            SearchCategory.upcoming,
+            style: const TextStyle(color: Colors.white),
+          ),
         ),
+        DropdownMenuItem(
+          value: SearchCategory.none,
+          child: Text(
+            SearchCategory.none,
+            style: const TextStyle(color: Colors.white),
+          ),
         )
       ],
     );
   }
+
+  Widget _moviesListViewWidget() {
+    final _movies = [];
+
+    for (var i = 0; i < 20; i++) {
+      _movies.add(Movie(
+          name: 'Mortal Kombat',
+          language: 'English',
+          isAdult: false,
+          description:
+          "Willy Wonka – chock-full of ideas and determined to change the world one delectable bite at a time – is proof that the best things in life begin with a dream, and if you’re lucky enough to meet Willy Wonka, anything is possible.",
+          posterPath: '/qhb1qOilapbapxWQn9jtRCMwXJF.jpg',
+          backdropPath: '/yyFc8Iclt2jxPmLztbP617xXllT.jpg',
+          rating: 7.8,
+          releaseDate: '2021-04-07'));
+    }
+
+    if (_movies.length != 0) {
+      return ListView.builder(
+          itemCount: _movies.length,
+          itemBuilder: (BuildContext _context, int _count) {
+            return Padding(
+              padding: EdgeInsets.symmetric(
+                  vertical: _deviceHeight! * 0.01, horizontal: 0),
+              child: GestureDetector(
+                onTap: () {},
+                child: Text(_movies[_count].name),
+              ),
+            );
+          });
+    } else {
+      return const Center(
+        child: CircularProgressIndicator(
+          backgroundColor: Colors.white,
+        ),
+      );
+    }
+  }
+
 }
