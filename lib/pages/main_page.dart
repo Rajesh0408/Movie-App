@@ -4,6 +4,9 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+//widgets
+import '../widgets/movie_tile.dart';
+
 //models
 import '../models/search_category.dart';
 import '../models/movie.dart';
@@ -25,6 +28,7 @@ class MainPage extends ConsumerWidget {
 
   Widget _buildUI() {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: Colors.black,
       body: Container(
         height: _deviceHeight,
@@ -68,7 +72,7 @@ class MainPage extends ConsumerWidget {
       width: _deviceWidth! * 0.88,
       child: Column(
         mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           _topBarWidget(),
@@ -195,7 +199,7 @@ class MainPage extends ConsumerWidget {
                   vertical: _deviceHeight! * 0.01, horizontal: 0),
               child: GestureDetector(
                 onTap: () {},
-                child: Text(_movies[_count].name),
+                child: MovieTile(height: _deviceHeight!*0.20, width: _deviceWidth!*0.85, movie: _movies[_count]),
               ),
             );
           });
