@@ -31,59 +31,65 @@ class MovieTile extends StatelessWidget {
   Widget _movieInfoWidget() {
     return Container(
       height: height,
-      width: width * 0.66,
-      child: Column(
-        mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                width: width * 0.56,
-                child: Text(
-                  movie.name,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+      width: width * 0.70,
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Flexible(
+              child: Row(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Flexible(
+                    child: Container(
+                      width: width * 0.56,
+                      child: Text(
+                        movie.name,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 23,
+                            fontWeight: FontWeight.w400),
+                      ),
+                    ),
+                  ),
+                  Text(
+                    movie.rating.toString(),
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 25,
-                      fontWeight: FontWeight.w400),
-                ),
+                      fontSize: 22,
+                    ),
+                  ),
+                ],
               ),
-              Text(
-                movie.rating.toString(),
+            ),
+            Container(
+              padding: EdgeInsets.fromLTRB(0, height * 0.02, 0, 0),
+              child: Text(
+                '${movie.language.toUpperCase()} | R: ${movie.isAdult} | ${movie.releaseDate}',
+                style: const TextStyle(color: Colors.white, fontSize: 12),
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.fromLTRB(0, height * 0.07, 0, 0),
+              child: Text(
+                movie.description,
+                maxLines: 9,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 22,
+                  color: Colors.white70,
+                  fontSize: 10,
                 ),
               ),
-            ],
-          ),
-          Container(
-            padding: EdgeInsets.fromLTRB(0, height * 0.02, 0, 0),
-            child: Text(
-              '${movie.language.toUpperCase()} | R: ${movie.isAdult} | ${movie.releaseDate}',
-              style: const TextStyle(color: Colors.white, fontSize: 12),
             ),
-          ),
-          Container(
-            padding: EdgeInsets.fromLTRB(0, height * 0.07, 0, 0),
-            child: Text(
-              movie.description,
-              maxLines: 9,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Colors.white70,
-                fontSize: 10,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
+
   }
 
   Widget _moviePosterWidget(String _imageURL) {

@@ -1,13 +1,12 @@
-//packages
+import '../models/app_config.dart';
+
+//Packages
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 
-//models
-import '../models/app_config.dart';
-
 class HTTPService {
   final Dio dio = Dio();
-  final getIt = GetIt.instance;
+  final GetIt getIt = GetIt.instance;
 
   String? _base_url;
   String? _api_key;
@@ -28,11 +27,10 @@ class HTTPService {
       if (query != null) {
         _query.addAll(query);
       }
-
       return await dio.get(_url, queryParameters: _query);
-    } on DioError catch (e){
-      print('Unable to perform get request');
-      print('DioError: $e');
+    } on DioError catch (e) {
+      print('Unable to perform get request.');
+      print('DioError:$e');
     }
   }
 }

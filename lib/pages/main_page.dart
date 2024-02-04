@@ -1,19 +1,38 @@
-//packages
 import 'dart:ui';
 
+//Packages
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-//widgets
+//Widgets
+import '../models/main_page_data.dart';
 import '../widgets/movie_tile.dart';
 
-//models
+//Models
 import '../models/search_category.dart';
 import '../models/movie.dart';
+
+//Controllers
+import '../controllers/main_page_data_controller.dart';
+
+final mainPageDataControllerProvider =
+StateNotifierProvider<MainPageDataController, MainPageData>((ref) {
+  return MainPageDataController();
+});
+
+final selectedMoviePosterURLProvider = StateProvider<String?>((ref) {
+  final _movies = ref.watch(mainPageDataControllerProvider).movies!;
+  return _movies.length != 0 ? _movies[0].posterURL() : null;
+});
 
 class MainPage extends ConsumerWidget {
   double? _deviceHeight;
   double? _deviceWidth;
+
+  late var _selectedMoviePosterURL;
+
+  late MainPageDataController _mainPageDataController;
+  late MainPageData _mainPageData;
 
   TextEditingController? _searchTextFieldController;
 
@@ -22,7 +41,14 @@ class MainPage extends ConsumerWidget {
     _deviceHeight = MediaQuery.of(context).size.height;
     _deviceWidth = MediaQuery.of(context).size.width;
 
+    _mainPageDataController = ref.watch(mainPageDataControllerProvider.notifier);
+    _mainPageData = ref.watch(mainPageDataControllerProvider);
+    _selectedMoviePosterURL = ref.watch(selectedMoviePosterURLProvider);
+
     _searchTextFieldController = TextEditingController();
+
+    _searchTextFieldController!.text = _mainPageData.searchText!;
+
     return _buildUI();
   }
 
@@ -37,7 +63,7 @@ class MainPage extends ConsumerWidget {
           alignment: Alignment.center,
           children: [
             _backgroundWidget(),
-            _foregroundWidget(),
+            _foregroundWidgets(),
           ],
         ),
       ),
@@ -45,31 +71,39 @@ class MainPage extends ConsumerWidget {
   }
 
   Widget _backgroundWidget() {
-    return Container(
-      height: _deviceHeight,
-      width: _deviceWidth,
-      decoration: BoxDecoration(
+    if (_selectedMoviePosterURL != null) {
+      return Container(
+        height: _deviceHeight,
+        width: _deviceWidth,
+        decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10.0),
-          image: const DecorationImage(
+          image: DecorationImage(
+            image: NetworkImage(_selectedMoviePosterURL),
             fit: BoxFit.cover,
-            image: NetworkImage(
-                'https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?q=80&w=1000&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aHVtYW58ZW58MHx8MHx8fDA%3D'),
-          )),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 15.0, sigmaY: 15.0),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.2),
           ),
         ),
-      ),
-    );
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 15.0, sigmaY: 15.0),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.2),
+            ),
+          ),
+        ),
+      );
+    } else {
+      return Container(
+        height: _deviceHeight,
+        width: _deviceWidth,
+        color: Colors.black,
+      );
+    }
   }
 
-  Widget _foregroundWidget() {
+  Widget _foregroundWidgets() {
     return Container(
       padding: EdgeInsets.fromLTRB(0, _deviceHeight! * 0.02, 0, 0),
-      width: _deviceWidth! * 0.88,
+      width: _deviceWidth! * 0.90,
       child: Column(
         mainAxisSize: MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.end,
@@ -78,11 +112,9 @@ class MainPage extends ConsumerWidget {
           _topBarWidget(),
           Container(
             height: _deviceHeight! * 0.83,
-            padding: EdgeInsets.symmetric(
-              vertical: _deviceHeight! * 0.01,
-            ),
+            padding: EdgeInsets.symmetric(vertical: _deviceHeight! * 0.01),
             child: _moviesListViewWidget(),
-          ),
+          )
         ],
       ),
     );
@@ -100,37 +132,31 @@ class MainPage extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          _searchField(),
+          _searchFieldWidget(),
           _categorySelectionWidget(),
         ],
       ),
     );
   }
 
-  Widget _searchField() {
+  Widget _searchFieldWidget() {
     final _border = InputBorder.none;
-
     return Container(
       width: _deviceWidth! * 0.50,
       height: _deviceHeight! * 0.05,
       child: TextField(
         controller: _searchTextFieldController,
-        onSubmitted: (_input) {},
-        style: const TextStyle(color: Colors.white),
+        onSubmitted: (_input) =>
+            _mainPageDataController.updateTextSearch(_input),
+        style: TextStyle(color: Colors.white),
         decoration: InputDecoration(
-          focusedBorder: _border,
-          border: _border,
-          prefixIcon: const Icon(
-            Icons.search,
-            color: Colors.white,
-          ),
-          hintStyle: const TextStyle(
-            color: Colors.white54,
-          ),
-          filled: false,
-          fillColor: Colors.white24,
-          hintText: "Search....",
-        ),
+            focusedBorder: _border,
+            border: _border,
+            prefixIcon: Icon(Icons.search, color: Colors.white24),
+            hintStyle: TextStyle(color: Colors.white54),
+            filled: false,
+            fillColor: Colors.white24,
+            hintText: 'Search....'),
       ),
     );
   }
@@ -138,8 +164,8 @@ class MainPage extends ConsumerWidget {
   Widget _categorySelectionWidget() {
     return DropdownButton(
       dropdownColor: Colors.black38,
-      value: SearchCategory.popular,
-      icon: const Icon(
+      value: _mainPageData.searchCategory,
+      icon: Icon(
         Icons.menu,
         color: Colors.white24,
       ),
@@ -147,69 +173,78 @@ class MainPage extends ConsumerWidget {
         height: 1,
         color: Colors.white24,
       ),
-      onChanged: (_value) {},
+      onChanged: (dynamic _value) => _value.toString().isNotEmpty
+          ? _mainPageDataController.updateSearchCategory(_value)
+          : null,
       items: [
         DropdownMenuItem(
-          value: SearchCategory.popular,
           child: Text(
             SearchCategory.popular,
-            style: const TextStyle(color: Colors.white),
+            style: TextStyle(color: Colors.white),
           ),
+          value: SearchCategory.popular,
         ),
         DropdownMenuItem(
-          value: SearchCategory.upcoming,
           child: Text(
             SearchCategory.upcoming,
-            style: const TextStyle(color: Colors.white),
+            style: TextStyle(color: Colors.white),
           ),
+          value: SearchCategory.upcoming,
         ),
         DropdownMenuItem(
-          value: SearchCategory.none,
           child: Text(
             SearchCategory.none,
-            style: const TextStyle(color: Colors.white),
+            style: TextStyle(color: Colors.white),
           ),
-        )
+          value: SearchCategory.none,
+        ),
       ],
     );
   }
 
   Widget _moviesListViewWidget() {
-    final _movies = [];
-
-    for (var i = 0; i < 20; i++) {
-      _movies.add(Movie(
-          name: 'Mortal Kombat',
-          language: 'English',
-          isAdult: false,
-          description:
-          "Willy Wonka – chock-full of ideas and determined to change the world one delectable bite at a time – is proof that the best things in life begin with a dream, and if you’re lucky enough to meet Willy Wonka, anything is possible.",
-          posterPath: '/qhb1qOilapbapxWQn9jtRCMwXJF.jpg',
-          backdropPath: '/yyFc8Iclt2jxPmLztbP617xXllT.jpg',
-          rating: 7.8,
-          releaseDate: '2021-04-07'));
-    }
+    final List<Movie> _movies = _mainPageData.movies!;
 
     if (_movies.length != 0) {
-      return ListView.builder(
+      return NotificationListener(
+        onNotification: (dynamic _onScrollNotification) {
+          if (_onScrollNotification is ScrollEndNotification) {
+            final before = _onScrollNotification.metrics.extentBefore;
+            final max = _onScrollNotification.metrics.maxScrollExtent;
+            if (before == max) {
+              _mainPageDataController.getMovies();
+              return true;
+            }
+            return false;
+          }
+          return false;
+        },
+        child: ListView.builder(
           itemCount: _movies.length,
           itemBuilder: (BuildContext _context, int _count) {
             return Padding(
               padding: EdgeInsets.symmetric(
                   vertical: _deviceHeight! * 0.01, horizontal: 0),
               child: GestureDetector(
-                onTap: () {},
-                child: MovieTile(height: _deviceHeight!*0.20, width: _deviceWidth!*0.85, movie: _movies[_count]),
+                onTap: () {
+                  _selectedMoviePosterURL.state = _movies[_count].posterURL();
+                },
+                child: MovieTile(
+                  movie: _movies[_count],
+                  height: _deviceHeight! * 0.20,
+                  width: _deviceWidth! * 0.85,
+                ),
               ),
             );
-          });
+          },
+        ),
+      );
     } else {
-      return const Center(
+      return Center(
         child: CircularProgressIndicator(
           backgroundColor: Colors.white,
         ),
       );
     }
   }
-
 }
