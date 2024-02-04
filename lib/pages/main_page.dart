@@ -164,8 +164,8 @@ class MainPage extends ConsumerWidget {
   Widget _categorySelectionWidget() {
     return DropdownButton(
       dropdownColor: Colors.black38,
-      value: _mainPageData.searchCategory,
-      icon: Icon(
+      value: _mainPageData.searchCategory.toString(),
+      icon: const Icon(
         Icons.menu,
         color: Colors.white24,
       ),
@@ -173,30 +173,32 @@ class MainPage extends ConsumerWidget {
         height: 1,
         color: Colors.white24,
       ),
-      onChanged: (dynamic _value) => _value.toString().isNotEmpty
-          ? _mainPageDataController.updateSearchCategory(_value)
-          : null,
+      onChanged: (String? _value) {
+        if (_value.toString().isNotEmpty) {
+          _mainPageDataController.updateSearchCategory(_value);
+        }
+      },
       items: [
         DropdownMenuItem(
+          value: SearchCategory.popular.toString(),
           child: Text(
-            SearchCategory.popular,
-            style: TextStyle(color: Colors.white),
+            SearchCategory.popular.toString(),
+            style: const TextStyle(color: Colors.white),
           ),
-          value: SearchCategory.popular,
         ),
         DropdownMenuItem(
+          value: SearchCategory.upcoming.toString(),
           child: Text(
-            SearchCategory.upcoming,
-            style: TextStyle(color: Colors.white),
+            SearchCategory.upcoming.toString(),
+            style: const TextStyle(color: Colors.white),
           ),
-          value: SearchCategory.upcoming,
         ),
         DropdownMenuItem(
+          value: SearchCategory.none,
           child: Text(
             SearchCategory.none,
-            style: TextStyle(color: Colors.white),
+            style: const TextStyle(color: Colors.white),
           ),
-          value: SearchCategory.none,
         ),
       ],
     );
@@ -240,7 +242,7 @@ class MainPage extends ConsumerWidget {
         ),
       );
     } else {
-      return Center(
+      return const Center(
         child: CircularProgressIndicator(
           backgroundColor: Colors.white,
         ),
